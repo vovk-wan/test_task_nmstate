@@ -142,7 +142,7 @@ def menu_controller(stdscr, y, x):
 
     menu_win = stdscr.subwin(menu_height, menu_width, menu_top, menu_left)
 
-    NetInterface.get_interfaces()
+    NetInterface.update_interfaces()
     menu_items = []
     for iface in NetInterface.ethernet_interfaces:
         # item = InterfaceItem(i, i.name)
@@ -160,7 +160,7 @@ def menu_controller(stdscr, y, x):
             menu.parent.refresh()
             res = interface_controller(menu.items[menu.position], stdscr, y, x + x + menu_width)
             if res == "reload":
-                NetInterface.get_interfaces(force=True)
+                NetInterface.update_interfaces(force=True)
                 menu_items = []
                 for iface in NetInterface.ethernet_interfaces:
                     # item = InterfaceItem(i, i.name)

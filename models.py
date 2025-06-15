@@ -124,38 +124,41 @@ class NetInterface:
         if self.controller:
             self._remove_bridge()
 
-    def apply(self, **kwargs):
-        self.get_interfaces()
-        orig = {item["name"]: item["value"] for item in self.serialize() if item["name"] in kwargs}
-        if orig == kwargs:
-            return 'no changes'
-        iface = []
-        bridge_name = ''
-
+    def _get_new_iface_state(self, **kwargs) -> dict:
         if "state" in kwargs and kwargs["state"].lower() == "down":
-            iface = self.state_down()
+            return self.state_down()
         elif "ipv4 address" in kwargs:
-            iface = self.dhcp_down(kwargs["ipv4 address"])
+            return self.dhcp_down(kwargs["ipv4 address"])
         elif "ipv4 dhcp" in kwargs and kwargs["ipv4 dhcp"]:
-            iface = self.dhcp_up()
+            return self.dhcp_up()
         elif "bridge name" in kwargs and kwargs["bridge name"]:
-            bridge_name = kwargs["bridge name"]
-            iface = self.add_bridge(kwargs["bridge name"])
+            return self.add_bridge(kwargs["bridge name"])
+        return {}
 
+    def apply(self, **kwargs):
+        self.update_interfaces()
+        origin = {item["name"]: item["value"] for item in self.serialize() if item["name"] in kwargs}
+        if origin == kwargs:
+            return 'no changes'
+        iface = self._get_new_iface_state(**kwargs)
+
+        if not iface:
+            return 'no changed'
+
+        bridge_name = kwargs["bridge name"] if "bridge name" in kwargs and kwargs["bridge name"] else ''
         self.update_bridges(bridge_name)
 
         state = {
-             Interface.KEY: [
-                 *self.bridges,
-                 iface
-             ]
-        }
-        if state[Interface.KEY]:
-            try:
-                libnmstate.apply(state, verify_change=True, rollback_timeout=30)
-                return "Ok"
-            except NmstateError as e:
-                return str(e)
+                Interface.KEY: [
+                    *self.bridges,
+                    iface
+                ]
+            }
+        try:
+            libnmstate.apply(state, verify_change=True, rollback_timeout=30)
+            return "Ok"
+        except NmstateError as e:
+            return str(e)
 
     def __str__(self):
         ip4_address = []
@@ -175,7 +178,7 @@ class NetInterface:
         groups.append(dict(name="ipv4 dhcp", value=dhcp, type="bool"))
         address = ''
         if self.state == InterfaceState.UP:
-            if 'addresfdsfs' in self.ipv4.keys():
+            if InterfaceIPv4.ADDRESS in self.ipv4.keys():
                 address = self.ipv4[InterfaceIPv4.ADDRESS][0][InterfaceIPv4.ADDRESS_IP]
 
         groups.append(dict(name="ipv4 address", value=address, type="ipv4address"))
@@ -186,7 +189,7 @@ class NetInterface:
         return groups
 
     @classmethod
-    def get_interfaces(cls, force: bool = False) -> None:
+    def update_interfaces(cls, force: bool = False) -> None:
         if force or not cls.net_state:
             cls.net_state = libnmstate.show()
         cls.ethernet_interfaces = [
