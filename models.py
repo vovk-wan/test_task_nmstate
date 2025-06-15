@@ -295,24 +295,6 @@ class NetInterface:
             )
 
 
-def get_all_interfaces():
-    data = libnmstate.show()
-    return [NetInterface(**interface) for interface in data['interfaces']]
-
-
-def get_ethernet_interfaces():
-    data = libnmstate.show()
-    return [
-        NetInterface(**interface) for interface in data['interfaces']
-        if interface[Interface.TYPE] == InterfaceType.ETHERNET
-    ]
-
-#
-# @dataclass
-# class InterfaceItem:  # TODO удалить, это лишнее
-#     interface: NetInterface
-#     name: str
-
 # TODO
 # TODO 1 docstring
 # TODO 2 annotation
