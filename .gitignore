@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.idea/
+.vscode/
+__pycache__/
+staticfiles/
+media/
+*.sqlite3
+sandbox/
+sandbox/1
