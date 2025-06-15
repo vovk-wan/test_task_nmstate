@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import logging
 
 import libnmstate
@@ -124,81 +123,6 @@ class NetInterface:
         self._add_bridge(bridge)
         if self.controller:
             self._remove_bridge()
-        # 1 есть новый мост, был старый мост
-        # if bridge and self.controller:
-        #     for item in self.bridges:
-        #         if item[Interface.NAME] == bridge:
-        #             ports = [
-        #                 port for port in item.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
-        #             ]
-        #             ports.append({LinuxBridge.Port.NAME: self.name})
-        #             item[LinuxBridge.CONFIG_SUBTREE] = {LinuxBridge.PORT_SUBTREE: ports}
-        #             break
-        #     else:
-        #         self.bridges.append(
-        #             {
-        #                 Interface.NAME: bridge,
-        #                 Interface.TYPE: InterfaceType.LINUX_BRIDGE,
-        #                 Interface.STATE: InterfaceState.UP,
-        #                 Interface.IPV4: {
-        #                     InterfaceIPv4.ENABLED: True,
-        #                     InterfaceIPv4.DHCP: True,
-        #                 },
-        #                 LinuxBridge.CONFIG_SUBTREE: {
-        #                     LinuxBridge.PORT_SUBTREE: [
-        #                         {LinuxBridge.Port.NAME: self.name}
-        #                     ]
-        #                 },
-        #             }
-        #         )
-
-            # for item in self.bridges:
-            #     if item[Interface.NAME] == self.controller:
-            #         ports = [
-            #             port for port in item.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
-            #             if port["name"] != self.name
-            #         ]
-            #         item[LinuxBridge.CONFIG_SUBTREE] = {LinuxBridge.PORT_SUBTREE: ports}
-            #         break
-
-        # 2 есть новый мост, не было старого моста
-        # if bridge and not self.controller:
-        #     for item in self.bridges:
-        #         if item[Interface.NAME] == bridge:
-        #             ports = [
-        #                 port for port in item.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
-        #             ]
-        #             ports.append({LinuxBridge.Port.NAME: self.name})
-        #             item[LinuxBridge.CONFIG_SUBTREE] = {LinuxBridge.PORT_SUBTREE: ports}
-        #             break
-        #     else:
-        #         self.bridges.append(
-        #             {
-        #                 Interface.NAME: bridge,
-        #                 Interface.TYPE: InterfaceType.LINUX_BRIDGE,
-        #                 Interface.STATE: InterfaceState.UP,
-        #                 Interface.IPV4: {
-        #                     InterfaceIPv4.ENABLED: True,
-        #                     InterfaceIPv4.DHCP: True,
-        #                 },
-        #                 LinuxBridge.CONFIG_SUBTREE: {
-        #                     LinuxBridge.PORT_SUBTREE: [
-        #                         {LinuxBridge.Port.NAME: self.name}
-        #                     ]
-        #                 },
-        #             }
-        #         )
-
-        # 3 был старый мост нет нового
-        # if not bridge and self.controller:
-        #     for item in self.bridges:
-        #         if item[Interface.NAME] == self.controller:
-        #             ports = [
-        #                 port for port in item.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
-        #                 if port[LinuxBridge.Port.NAME] != self.name
-        #             ]
-        #             item[LinuxBridge.CONFIG_SUBTREE] = {LinuxBridge.PORT_SUBTREE: ports}
-        #             break
 
     def apply(self, **kwargs):
         self.get_interfaces()
@@ -226,7 +150,6 @@ class NetInterface:
                  iface
              ]
         }
-        # return str(state)
         if state[Interface.KEY]:
             try:
                 libnmstate.apply(state, verify_change=True, rollback_timeout=30)
@@ -248,7 +171,6 @@ class NetInterface:
     def serialize(self) -> list[dict]:  # TODO может стоит заменить использовать `маппер` изменения вносить в интерфейс
         groups = list()
         groups.append(dict(name="state", value=self.state, type="state_bool"))
-        # groups.append(dict(name="ipv4 enabled", value=self.ipv4[InterfaceIPv4.ENABLED], type="bool"))
         dhcp = self.ipv4[InterfaceIPv4.DHCP] if self.ipv4[InterfaceIPv4.ENABLED] else False
         groups.append(dict(name="ipv4 dhcp", value=dhcp, type="bool"))
         address = ''
