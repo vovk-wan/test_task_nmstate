@@ -1,5 +1,5 @@
 import curses
-import re
+
 from abc import ABC, abstractmethod
 
 from consts import Color
@@ -125,10 +125,8 @@ class RadioGroupState(Widget):
 class Button:
     def __init__(self, parent, border_top, border_left, index, caption, mode):
         self.parent = parent
-        y, x = self.parent.getmaxyx()
-        self.y = border_top + index + border_top * index + 2
+        self.y = border_top + index + border_top * index + 1
         self.caption = f"    {caption}    "
-        # self.window = self.parent.subwin(self.y, x, border_top, border_left)
         self.x = (border_left + 21) // 2 - len(self.caption) // 2
         self.value = lambda: None
         self.mode = mode

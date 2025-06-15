@@ -29,7 +29,6 @@ def texteditor_controller(item):
 
             if get_validator(item["type"])(editor.value):
                 editor.color = curses.A_NORMAL
-                # editor.color = Color.WINDOW_COLOR
                 item["value"] = editor.value
                 break
             editor.color = curses.color_pair(Color.ERROR_VALIDATION_COLOR)
@@ -121,15 +120,12 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
                     stdscr.refresh()
                     if res.lower() == 'ok':
                         interface_view.parent.clear()
-                        # interface_view.parent.bkgd(' ', curses.color_pair(Color.INACTIVE_COLOR))
                         interface_view.parent.refresh()
                         return 'reload'
         elif key == curses.KEY_UP:
             interface_view.navigate(-1)
         elif key == curses.KEY_DOWN:
             interface_view.navigate(1)
-        # elif key == ord("q"):
-        #     sys.exit()
 
 
 def menu_controller(stdscr, y, x):
@@ -143,10 +139,7 @@ def menu_controller(stdscr, y, x):
     menu_win = stdscr.subwin(menu_height, menu_width, menu_top, menu_left)
 
     NetInterface.update_interfaces()
-    menu_items = []
-    for iface in NetInterface.ethernet_interfaces:
-        # item = InterfaceItem(i, i.name)
-        menu_items.append(iface)
+    menu_items = [iface for iface in NetInterface.ethernet_interfaces]
 
     menu = MenuView(menu_win, menu_items)
     while True:
@@ -161,14 +154,10 @@ def menu_controller(stdscr, y, x):
             res = interface_controller(menu.items[menu.position], stdscr, y, x + x + menu_width)
             if res == "reload":
                 NetInterface.update_interfaces(force=True)
-                menu_items = []
-                for iface in NetInterface.ethernet_interfaces:
-                    # item = InterfaceItem(i, i.name)
-                    menu_items.append(iface)
+                menu_items = [iface for iface in NetInterface.ethernet_interfaces]
 
                 menu = MenuView(menu_win, menu_items)
         elif key == ord("q"):
-            # sys.exit()
             break
         elif key == curses.KEY_UP:
             menu.navigate(-1)
