@@ -78,29 +78,33 @@ def radiogroup_controller(item):
             editor.handle_input(key)
 
 
-def interface_controller(interface: NetInterface, stdscr: curses.window, y: int, x: int):
+def interface_controller(
+    interface: NetInterface, stdscr: curses.window, y: int, x: int
+):
 
     height, weight = stdscr.getmaxyx()
     interfaces_height = height - y
     interfaces_width = 35
     interfaces_top = y
     interfaces_left = x
-    interfaces_win = stdscr.subwin(interfaces_height, interfaces_width, interfaces_top, interfaces_left)
+    interfaces_win = stdscr.subwin(
+        interfaces_height, interfaces_width, interfaces_top, interfaces_left
+    )
     interface_view = InterfaceView(interfaces_win, interface.serialize(), interface)
     while True:
-        interface_view.parent.bkgd(' ', curses.color_pair(Color.ACTIVE_COLOR))
+        interface_view.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
         interface_view.show()
 
         key = interface_view.window.getch()
 
         if key == 27:
-            interface_view.parent.bkgd(' ', curses.color_pair(Color.INACTIVE_COLOR))
+            interface_view.parent.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
             interface_view.parent.refresh()
-            stdscr.hline(1, 2, ' ', weight - 2)
+            stdscr.hline(1, 2, " ", weight - 2)
             stdscr.refresh()
             break
         elif key in [curses.KEY_ENTER, ord("\n")]:
-            stdscr.hline(1, 2, ' ', weight - 2)
+            stdscr.hline(1, 2, " ", weight - 2)
             stdscr.refresh()
             result = editor_controller(interface_view.items[interface_view.position])
             if result == "apply":
@@ -110,7 +114,9 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
                     if not get_validator(item["type"])(editor.value):
                         errors.append(item["name"])
                 if errors:
-                    stdscr.addstr(1, 2, f"errors field - {', '.join(errors)}", curses.A_BLINK)
+                    stdscr.addstr(
+                        1, 2, f"errors field - {', '.join(errors)}", curses.A_BLINK
+                    )
                     stdscr.refresh()
                 else:
                     res = interface_view.interface.apply(
@@ -118,10 +124,10 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
                     )
                     stdscr.addstr(1, 2, res)
                     stdscr.refresh()
-                    if res.lower() == 'ok':
+                    if res.lower() == "ok":
                         interface_view.parent.clear()
                         interface_view.parent.refresh()
-                        return 'reload'
+                        return "reload"
         elif key == curses.KEY_UP:
             interface_view.navigate(-1)
         elif key == curses.KEY_DOWN:
@@ -143,15 +149,17 @@ def menu_controller(stdscr, y, x):
 
     menu = MenuView(menu_win, menu_items)
     while True:
-        menu.parent.bkgd(' ', curses.color_pair(Color.ACTIVE_COLOR))
+        menu.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
         menu.parent.refresh()
         menu.show()
         key = menu.window.getch()
 
         if key in [curses.KEY_ENTER, ord("\n")]:
-            menu.parent.bkgd(' ', curses.color_pair(Color.INACTIVE_COLOR))
+            menu.parent.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
             menu.parent.refresh()
-            res = interface_controller(menu.items[menu.position], stdscr, y, x + x + menu_width)
+            res = interface_controller(
+                menu.items[menu.position], stdscr, y, x + x + menu_width
+            )
             if res == "reload":
                 NetInterface.update_interfaces(force=True)
                 menu_items = [iface for iface in NetInterface.ethernet_interfaces]

@@ -33,12 +33,12 @@ class TextEdit(Widget):
         self.width = width - 2 - 1
         self.cursor_pos = 0
         self.window.keypad(True)
-        self.value = ''
+        self.value = ""
 
     def show(self):
-        self.window.hline(self.y, self.x, ' ', self.width)
-        display_text = self.value[:self.width]
-        self.window.bkgd(' ', self.color)
+        self.window.hline(self.y, self.x, " ", self.width)
+        display_text = self.value[: self.width]
+        self.window.bkgd(" ", self.color)
         self.window.addstr(self.y, self.x, display_text)
         cursor_x = self.x + self.cursor_pos
         self.window.move(self.y, cursor_x)
@@ -54,14 +54,22 @@ class TextEdit(Widget):
                 self.cursor_pos += 1
         elif key == curses.KEY_BACKSPACE:
             if self.cursor_pos > 0:
-                self.value = self.value[:self.cursor_pos - 1] + self.value[self.cursor_pos:]
+                self.value = (
+                    self.value[: self.cursor_pos - 1] + self.value[self.cursor_pos :]
+                )
                 self.cursor_pos -= 1
         elif key == curses.KEY_DC:
             if self.cursor_pos > 0:
-                self.value = self.value[:self.cursor_pos] + self.value[self.cursor_pos + 1:]
+                self.value = (
+                    self.value[: self.cursor_pos] + self.value[self.cursor_pos + 1 :]
+                )
         elif 32 <= key < 127:
             if len(self.value) < self.width:
-                self.value = self.value[:self.cursor_pos] + chr(key) + self.value[self.cursor_pos:]
+                self.value = (
+                    self.value[: self.cursor_pos]
+                    + chr(key)
+                    + self.value[self.cursor_pos :]
+                )
                 self.cursor_pos += 1
 
 
@@ -85,7 +93,7 @@ class Checkbox(Widget):
 class RadioGroupState(Widget):
     def __init__(self, parent, border_top, border_left, index, caption, mode):
         super().__init__(parent, border_top, border_left, index, caption, mode)
-        self.options = ['UP', 'DOWN']
+        self.options = ["UP", "DOWN"]
         self.selected_index = 0
         self.spacing = 3
         self.window.keypad(True)
@@ -134,9 +142,15 @@ class Button:
     def show(self):
         if self.mode == curses.A_NORMAL:
             self.parent.addstr(
-                self.y, self.x, self.caption, curses.color_pair(Color.INACTIVE_BUTTON_COLOR) | curses.A_BOLD
+                self.y,
+                self.x,
+                self.caption,
+                curses.color_pair(Color.INACTIVE_BUTTON_COLOR) | curses.A_BOLD,
             )
         else:
             self.parent.addstr(
-                self.y, self.x, self.caption, curses.color_pair(Color.ACTIVE_BUTTON_COLOR) | curses.A_BOLD
+                self.y,
+                self.x,
+                self.caption,
+                curses.color_pair(Color.ACTIVE_BUTTON_COLOR) | curses.A_BOLD,
             )

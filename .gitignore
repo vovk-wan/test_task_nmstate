@@ -8,3 +8,5 @@ media/
 *.sqlite3
 sandbox/
 sandbox/1
+docker-compose.yml
+Dockerfile

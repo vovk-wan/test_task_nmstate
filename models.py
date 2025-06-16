@@ -1,19 +1,26 @@
 import logging
 
 import libnmstate
-from libnmstate.schema import (Interface, InterfaceState, InterfaceIPv4, LinuxBridge, InterfaceType)
+from libnmstate.schema import (
+    Interface,
+    InterfaceState,
+    InterfaceIPv4,
+    LinuxBridge,
+    InterfaceType,
+)
 from libnmstate.error import NmstateError
 
-logging.getLogger('libnmstate').propagate = False
-logging.getLogger('libnmstate').addHandler(logging.NullHandler())
-logging.getLogger('urllib3').propagate = False
-logging.getLogger('requests').propagate = False
+logging.getLogger("libnmstate").propagate = False
+logging.getLogger("libnmstate").addHandler(logging.NullHandler())
+logging.getLogger("urllib3").propagate = False
+logging.getLogger("requests").propagate = False
 
 
 class NetInterface:
     """
     Класс - оболочка ethernet интерфейса
     """
+
     net_state = dict()
     ethernet_interfaces = list()
     bridges = list()
@@ -24,32 +31,26 @@ class NetInterface:
         self.state = kwargs[Interface.STATE]
         self.mac_address = kwargs[Interface.MAC]
         self.mtu = kwargs[Interface.MTU]
-        self.controller = kwargs.get(Interface.CONTROLLER, '')
+        self.controller = kwargs.get(Interface.CONTROLLER, "")
         self.ipv4 = kwargs[Interface.IPV4]
         self.ipv6 = kwargs[Interface.IPV6]
 
     def state_up(self) -> dict:
-        return {
-            Interface.NAME: self.name,
-            Interface.STATE: InterfaceState.UP
-        }
+        return {Interface.NAME: self.name, Interface.STATE: InterfaceState.UP}
 
     def state_down(self) -> dict:
-        return {
-            Interface.NAME: self.name,
-            Interface.STATE: InterfaceState.DOWN
-        }
+        return {Interface.NAME: self.name, Interface.STATE: InterfaceState.DOWN}
 
     def dhcp_up(self) -> dict:
         return {
-                    Interface.NAME: self.name,
-                    Interface.TYPE: InterfaceType.ETHERNET,
-                    Interface.STATE: InterfaceState.UP,
-                    Interface.IPV4: {
-                        InterfaceIPv4.ENABLED: True,
-                        InterfaceIPv4.DHCP: True,
-                    }
-                }
+            Interface.NAME: self.name,
+            Interface.TYPE: InterfaceType.ETHERNET,
+            Interface.STATE: InterfaceState.UP,
+            Interface.IPV4: {
+                InterfaceIPv4.ENABLED: True,
+                InterfaceIPv4.DHCP: True,
+            },
+        }
 
     def dhcp_down(self, ip) -> dict:
         return {
@@ -86,9 +87,7 @@ class NetInterface:
                     InterfaceIPv4.DHCP: True,
                 },
                 LinuxBridge.CONFIG_SUBTREE: {
-                    LinuxBridge.PORT_SUBTREE: [
-                        {LinuxBridge.Port.NAME: self.name}
-                    ]
+                    LinuxBridge.PORT_SUBTREE: [{LinuxBridge.Port.NAME: self.name}]
                 },
             }
         )
@@ -99,7 +98,10 @@ class NetInterface:
         for item in self.bridges:
             if item[Interface.NAME] == bridge:
                 ports = [
-                    port for port in item.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
+                    port
+                    for port in item.get(LinuxBridge.CONFIG_SUBTREE, {}).get(
+                        LinuxBridge.PORT_SUBTREE, []
+                    )
                 ]
                 ports.append({LinuxBridge.Port.NAME: self.name})
                 item[LinuxBridge.CONFIG_SUBTREE] = {LinuxBridge.PORT_SUBTREE: ports}
@@ -111,7 +113,10 @@ class NetInterface:
         for item in self.bridges:
             if item[Interface.NAME] == self.controller:
                 ports = [
-                    port for port in item.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
+                    port
+                    for port in item.get(LinuxBridge.CONFIG_SUBTREE, {}).get(
+                        LinuxBridge.PORT_SUBTREE, []
+                    )
                     if port["name"] != self.name
                 ]
                 item[LinuxBridge.CONFIG_SUBTREE] = {LinuxBridge.PORT_SUBTREE: ports}
@@ -137,23 +142,26 @@ class NetInterface:
 
     def apply(self, **kwargs):
         self.update_interfaces()
-        origin = {item["name"]: item["value"] for item in self.serialize() if item["name"] in kwargs}
+        origin = {
+            item["name"]: item["value"]
+            for item in self.serialize()
+            if item["name"] in kwargs
+        }
         if origin == kwargs:
-            return 'no changes'
+            return "no changes"
         iface = self._get_new_iface_state(**kwargs)
 
         if not iface:
-            return 'no changed'
+            return "no changed"
 
-        bridge_name = kwargs["bridge name"] if "bridge name" in kwargs and kwargs["bridge name"] else ''
+        bridge_name = (
+            kwargs["bridge name"]
+            if "bridge name" in kwargs and kwargs["bridge name"]
+            else ""
+        )
         self.update_bridges(bridge_name)
 
-        state = {
-                Interface.KEY: [
-                    *self.bridges,
-                    iface
-                ]
-            }
+        state = {Interface.KEY: [*self.bridges, iface]}
         try:
             libnmstate.apply(state, verify_change=True, rollback_timeout=30)
             return "Ok"
@@ -162,29 +170,42 @@ class NetInterface:
 
     def __str__(self):
         ip4_address = []
-        if 'address' in self.ipv4.keys():
-            ip4_address = [address[InterfaceIPv4.ADDRESS_IP] for address in self.ipv4[InterfaceIPv4.ADDRESS]]
+        if "address" in self.ipv4.keys():
+            ip4_address = [
+                address[InterfaceIPv4.ADDRESS_IP]
+                for address in self.ipv4[InterfaceIPv4.ADDRESS]
+            ]
         return (
-            f'name {self.name} \n '
-            f'type  {self.type},\n '
-            f'ip4 address {ip4_address},\n '
-            f'state {self.state},\n '
-                )
+            f"name {self.name} \n "
+            f"type  {self.type},\n "
+            f"ip4 address {ip4_address},\n "
+            f"state {self.state},\n "
+        )
 
-    def serialize(self) -> list[dict]:  # TODO может стоит заменить использовать `маппер` изменения вносить в интерфейс
+    def serialize(self) -> list[dict]:
         groups = list()
         groups.append(dict(name="state", value=self.state, type="state_bool"))
-        dhcp = self.ipv4[InterfaceIPv4.DHCP] if self.ipv4[InterfaceIPv4.ENABLED] else False
+        dhcp = (
+            self.ipv4[InterfaceIPv4.DHCP] if self.ipv4[InterfaceIPv4.ENABLED] else False
+        )
         groups.append(dict(name="ipv4 dhcp", value=dhcp, type="bool"))
-        address = ''
+        address = ""
         if self.state == InterfaceState.UP:
             if InterfaceIPv4.ADDRESS in self.ipv4.keys():
                 address = self.ipv4[InterfaceIPv4.ADDRESS][0][InterfaceIPv4.ADDRESS_IP]
 
         groups.append(dict(name="ipv4 address", value=address, type="ipv4address"))
         groups.append(dict(name="bridge", value=bool(self.controller), type="bool"))
-        groups.append(dict(name="bridge name", value=self.controller, type="bridge_name"))
-        groups.append(dict(name="apply", value=self.apply if self.controller else '', type="apply_button"))
+        groups.append(
+            dict(name="bridge name", value=self.controller, type="bridge_name")
+        )
+        groups.append(
+            dict(
+                name="apply",
+                value=self.apply if self.controller else "",
+                type="apply_button",
+            )
+        )
 
         return groups
 
@@ -193,15 +214,21 @@ class NetInterface:
         if force or not cls.net_state:
             cls.net_state = libnmstate.show()
         cls.ethernet_interfaces = [
-            NetInterface(**interface) for interface in cls.net_state[Interface.KEY]
+            NetInterface(**interface)
+            for interface in cls.net_state[Interface.KEY]
             if interface[Interface.TYPE] == InterfaceType.ETHERNET
         ]
         cls.bridges = []
-        for interface in [interface for interface in cls.net_state[Interface.KEY]
-                          if interface[Interface.TYPE] == InterfaceType.LINUX_BRIDGE]:
+        for interface in [
+            interface
+            for interface in cls.net_state[Interface.KEY]
+            if interface[Interface.TYPE] == InterfaceType.LINUX_BRIDGE
+        ]:
             ports = [
                 {LinuxBridge.Port.NAME: port.get(LinuxBridge.Port.NAME)}
-                for port in interface.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
+                for port in interface.get(LinuxBridge.CONFIG_SUBTREE, {}).get(
+                    LinuxBridge.PORT_SUBTREE, []
+                )
             ]
 
             cls.bridges.append(
@@ -213,9 +240,7 @@ class NetInterface:
                         InterfaceIPv4.ENABLED: True,
                         InterfaceIPv4.DHCP: True,
                     },
-                    LinuxBridge.CONFIG_SUBTREE: {
-                        LinuxBridge.PORT_SUBTREE: [*ports]
-                    },
+                    LinuxBridge.CONFIG_SUBTREE: {LinuxBridge.PORT_SUBTREE: [*ports]},
                 }
             )
 

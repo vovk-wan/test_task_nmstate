@@ -26,7 +26,9 @@ class View(ABC):
         window_top = begin_y + border_top
         window_left = begin_x + border_left
         self.window_width = window_width
-        self.window = self.parent.subwin(window_height, window_width, window_top, window_left)
+        self.window = self.parent.subwin(
+            window_height, window_width, window_top, window_left
+        )
 
         self.parent.box()
 
@@ -51,7 +53,7 @@ class MenuView(View):
 
     def __init__(self, parent, items):
         super().__init__(parent, items)
-        self.parent.addstr(0, 0, "Menu", )
+        self.parent.addstr(0, 0, "Menu")
 
     def show(self):
         self.window.clear()
@@ -63,7 +65,7 @@ class MenuView(View):
                 mode = curses.A_REVERSE
             else:
                 mode = curses.A_NORMAL
-            caption = f'{i}. {item.name}'
+            caption = f"{i}. {item.name}"
             self.window.addstr(1 + i, 1, caption, mode)
 
 
@@ -72,8 +74,8 @@ class InterfaceView(View):
         super().__init__(parent, items)
         self.interface = interface
         self.parent.addstr(0, 0, "Interface")
-        self.parent.hline(1, 1, ' ', self.window_width - 2)
-        self.parent.addstr(1, 1, f'name: {interface.name}, type: {interface.type}')
+        self.parent.hline(1, 1, " ", self.window_width - 2)
+        self.parent.addstr(1, 1, f"name: {interface.name}, type: {interface.type}")
         self.full_items = items
 
     def show(self):
@@ -105,11 +107,9 @@ class InterfaceView(View):
             show_items = ["state", "apply"]
         elif res["bridge"]:
             show_items = ["bridge", "bridge name", "apply"]
-        # elif not res["ipv4 enabled"]:
-        #     show_items = ["state", "ipv4 enabled", "bridge", "apply"]
         elif res["ipv4 dhcp"]:
-            show_items = ["state", "ipv4 enabled", "ipv4 dhcp", "bridge", "apply"]
+            show_items = ["state", "ipv4 dhcp", "bridge", "apply"]
         elif not res["ipv4 dhcp"]:
-            show_items = ["state", "ipv4 enabled", "ipv4 dhcp", "ipv4 address", "bridge", "apply"]
+            show_items = ["state", "ipv4 dhcp", "ipv4 address", "bridge", "apply"]
 
         self.items = [item for item in self.full_items if item["name"] in show_items]
