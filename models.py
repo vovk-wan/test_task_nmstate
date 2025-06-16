@@ -1,6 +1,13 @@
+"""
+models.py
+---------
+The module contains classes and methods for the application to work with the nmstate library.
+"""
+
 import logging
 
 import libnmstate
+
 from libnmstate.schema import (
     Interface,
     InterfaceState,
@@ -10,6 +17,10 @@ from libnmstate.schema import (
 )
 from libnmstate.error import NmstateError
 
+APPLY_RESULT_NO_CHANGE = "no change"
+APPLY_RESULT_OK = "Ok"
+
+
 logging.getLogger("libnmstate").propagate = False
 logging.getLogger("libnmstate").addHandler(logging.NullHandler())
 logging.getLogger("urllib3").propagate = False
@@ -17,9 +28,7 @@ logging.getLogger("requests").propagate = False
 
 
 class NetInterface:
-    """
-    Class - ethernet interface wrapper
-    """
+    """Class - ethernet interface wrapper."""
 
     net_state = dict()
     ethernet_interfaces = list()
@@ -39,7 +48,7 @@ class NetInterface:
         """
         The method generates the 'state=up' interface state for the netstate lib.
 
-        Returns: dict - interface state
+        Returns: interface state
         """
 
         return {Interface.NAME: self.name, Interface.STATE: InterfaceState.UP}
@@ -48,7 +57,7 @@ class NetInterface:
         """
         Method generates interface state 'state=down' for netstate lib.
 
-        Returns: dict - in this state
+        Returns: interface state
         """
 
         return {Interface.NAME: self.name, Interface.STATE: InterfaceState.DOWN}
@@ -57,7 +66,7 @@ class NetInterface:
         """
         Method generates interface state 'dhcp=up' for netstate lib.
 
-        Returns: dict - interface state
+        Returns: interface state
         """
 
         return {
@@ -73,10 +82,11 @@ class NetInterface:
     def dhcp_down(self, ip) -> dict:
         """
         The method generates the interface state with manual IP input for the netstate lib.
-        Args:
-            ip: str - ip addres
 
-        Returns: dict - interface state
+        Args:
+            ip: ip addres
+
+        Returns: interface state
         """
 
         return {
@@ -97,10 +107,11 @@ class NetInterface:
     def add_bridge(self, bridge: str) -> dict:
         """
         The method generates the interface state with the LinuxBridge controller for netstat lib.
-        Args:
-            bridge: str - bridge name
 
-        Returns:dict
+        Args:
+            bridge: bridge name
+
+        Returns: interface state
         """
 
         return {
@@ -115,9 +126,7 @@ class NetInterface:
         The method adds the LinuxBridge configuration for the netstate library
         to the list of bridges.
         Args:
-            bridge: str - bridge name
-
-        Returns: None
+            bridge: bridge name
         """
 
         self.bridges.append(
@@ -140,9 +149,7 @@ class NetInterface:
         The method modifies or adds a bridge configuration for the netstate lib
         to the list of bridges.
         Args:
-            bridge: str - bridge name
-
-        Returns: None
+            bridge: bridge name
         """
 
         if not bridge:
@@ -161,11 +168,7 @@ class NetInterface:
         self._create_bridge(bridge)
 
     def _remove_bridge(self) -> None:
-        """
-        The method removes a port from the bridge configuration for the netstate lib.
-
-        Returns: None
-        """
+        """The method removes a port from the bridge configuration for the netstate lib."""
 
         for item in self.bridges:
             if item[Interface.NAME] == self.controller:
@@ -181,12 +184,10 @@ class NetInterface:
 
     def update_bridges(self, bridge: str) -> None:
         """
-        The method updates the bridge configuration for the netstate library
-        in the bridge list.
-        Args:
-            bridge: str - bridge name
+        The method updates the bridge configuration for the netstate lib in the bridge list.
 
-        Returns: None
+        Args:
+            bridge: bridge name
         """
 
         if self.controller == bridge:
@@ -197,11 +198,12 @@ class NetInterface:
 
     def _get_new_iface_state(self, **kwargs) -> dict:
         """
-        The method generates a new interface state for the netstate library.
+        The method generates a new interface state for the netstate lib.
+
         Args:
             **kwargs:
 
-        Returns: dict - interface state
+        Returns: interface state
         """
 
         if "state" in kwargs and kwargs["state"].lower() == "down":
@@ -216,11 +218,12 @@ class NetInterface:
 
     def apply(self, **kwargs) -> str:
         """
-        The method applies the interface state using the netstate library.
+        The method applies the interface state using the netstate lib.
+
         Args:
             **kwargs:
 
-        Returns: str - result apply
+        Returns: result apply
         """
 
         self.update_interfaces()
@@ -230,33 +233,28 @@ class NetInterface:
             if item["name"] in kwargs
         }
         if origin == kwargs:
-            return "no changes"
+            return APPLY_RESULT_NO_CHANGE
+
         iface = self._get_new_iface_state(**kwargs)
 
         if not iface:
-            return "no changed"
+            return APPLY_RESULT_NO_CHANGE
 
-        bridge_name = (
-            kwargs["bridge name"]
-            if "bridge name" in kwargs and kwargs["bridge name"]
-            else ""
-        )
+        bridge_name = kwargs.get("bridge name", "") or ""
+
         self.update_bridges(bridge_name)
 
         state = {Interface.KEY: [*self.bridges, iface]}
         try:
             libnmstate.apply(state, verify_change=True, rollback_timeout=30)
-            return "Ok"
+            return APPLY_RESULT_OK
         except NmstateError as e:
             return str(e)
 
     def __str__(self):
         ip4_address = []
         if "address" in self.ipv4.keys():
-            ip4_address = [
-                address[InterfaceIPv4.ADDRESS_IP]
-                for address in self.ipv4[InterfaceIPv4.ADDRESS]
-            ]
+            ip4_address = [address[InterfaceIPv4.ADDRESS_IP] for address in self.ipv4[InterfaceIPv4.ADDRESS]]
         return (
             f"name {self.name} \n "
             f"type  {self.type},\n "
@@ -268,68 +266,51 @@ class NetInterface:
         """
         The method generates items to represent the interface.
 
-        Returns: list[dict]
+        Returns: list items for view classes
         """
 
-        groups = list()
-        groups.append(dict(name="state", value=self.state, type="state_bool"))
-        dhcp = (
-            self.ipv4[InterfaceIPv4.DHCP] if self.ipv4[InterfaceIPv4.ENABLED] else False
-        )
-        groups.append(dict(name="ipv4 dhcp", value=dhcp, type="bool"))
+        items = list()
+        items.append(dict(name="state", value=self.state, type="state_bool"))
+
+        dhcp = (self.ipv4[InterfaceIPv4.DHCP] if self.ipv4[InterfaceIPv4.ENABLED] else False)
+        items.append(dict(name="ipv4 dhcp", value=dhcp, type="bool"))
+
         address = ""
         if self.state == InterfaceState.UP:
             if InterfaceIPv4.ADDRESS in self.ipv4.keys():
                 address = self.ipv4[InterfaceIPv4.ADDRESS][0][InterfaceIPv4.ADDRESS_IP]
 
-        groups.append(dict(name="ipv4 address", value=address, type="ipv4address"))
-        groups.append(dict(name="bridge", value=bool(self.controller), type="bool"))
-        groups.append(
-            dict(name="bridge name", value=self.controller, type="bridge_name")
-        )
-        groups.append(
-            dict(
-                name="apply",
-                value=self.apply if self.controller else "",
-                type="apply_button",
-            )
-        )
+        items.append(dict(name="ipv4 address", value=address, type="ipv4address"))
+        items.append(dict(name="bridge", value=bool(self.controller), type="bool"))
+        items.append(dict(name="bridge name", value=self.controller, type="bridge_name"))
+        items.append(dict(name="apply", value=self.apply if self.controller else "", type="apply_button"))
 
-        return groups
+        return items
 
     @classmethod
-    def update_interfaces(cls, force: bool = False) -> None:
-        """
-        The method updates the list of Ethernet interfaces, the list of bridges,
-        and network state information.
-        Args:
-            force:
+    def update_interfaces(cls) -> None:
+        """The method updates the list of Ethernet interfaces, the list of bridges, and network state information."""
 
-        Returns:
-
-        """
         cls.net_state = libnmstate.show()
+        interfaces = cls.get_interfaces(cls.net_state)
+
         cls.ethernet_interfaces = [
-            NetInterface(**interface)
-            for interface in cls.net_state[Interface.KEY]
+            NetInterface(**interface) for interface in interfaces
             if interface[Interface.TYPE] == InterfaceType.ETHERNET
         ]
-        cls.bridges = []
-        for interface in [
-            interface
-            for interface in cls.net_state[Interface.KEY]
+
+        bridge_interfaces = [
+            interface for interface in cls.net_state[Interface.KEY]
             if interface[Interface.TYPE] == InterfaceType.LINUX_BRIDGE
-        ]:
-            ports = [
-                {LinuxBridge.Port.NAME: port.get(LinuxBridge.Port.NAME)}
-                for port in interface.get(LinuxBridge.CONFIG_SUBTREE, {}).get(
-                    LinuxBridge.PORT_SUBTREE, []
-                )
-            ]
+        ]
+
+        cls.bridges = []
+        for bridge in bridge_interfaces:
+            ports = cls.get_bridge_ports(bridge)
 
             cls.bridges.append(
                 {
-                    Interface.NAME: interface[Interface.NAME],
+                    Interface.NAME: bridge[Interface.NAME],
                     Interface.TYPE: InterfaceType.LINUX_BRIDGE,
                     Interface.STATE: InterfaceState.UP,
                     Interface.IPV4: {
@@ -339,3 +320,14 @@ class NetInterface:
                     LinuxBridge.CONFIG_SUBTREE: {LinuxBridge.PORT_SUBTREE: [*ports]},
                 }
             )
+
+    @staticmethod
+    def get_interfaces(net_state: dict) -> list:
+        """The method returns interfaces from net state."""
+        return net_state[Interface.KEY]
+
+    @staticmethod
+    def get_bridge_ports(bridge: dict) -> list[dict]:
+        """The method returns bridge ports from bridge interface."""
+        ports = bridge.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
+        return [{LinuxBridge.Port.NAME: port.get(LinuxBridge.Port.NAME)} for port in ports]

@@ -1,6 +1,13 @@
+"""
+consts.py
+----------
+The module for safe common constant.
+"""
+
+
 class Color:
     """
-    Dataclass for constant name colors pair.
+    Class for constant name colors pair.
     """
 
     ACTIVE_COLOR: int = 1
