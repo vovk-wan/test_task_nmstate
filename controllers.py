@@ -26,7 +26,15 @@ def get_editor_controller(item: dict) -> Callable:
         return apply_button_controller
 
 
-def texteditor_controller(item) -> None:
+def texteditor_controller(item: dict) -> None:
+    """
+    The function handles pressing keyboard buttons in the TextEdit widget
+    Args:
+        item: dict
+
+    Returns: None
+    """
+
     editor = item["editor"]
     curses.curs_set(1)
     while True:
@@ -47,33 +55,41 @@ def texteditor_controller(item) -> None:
     curses.curs_set(0)
 
 
-def ipv4editor_controller(item):
-    editor = item["editor"]
-    curses.curs_set(1)
-    while True:
-        editor.show()
-        key = editor.window.getch()
-        if key == 27:
-            break
-        if key in [curses.KEY_ENTER, ord("\n")]:
-            item["value"] = list(editor.value)
-            break
-        else:
-            editor.handle_input(key)
-    curses.curs_set(0)
+def checkbox_controller(item: dict):
+    """
+    The function handles pressing enter button in the CheckBox widget
+    Args:
+        item: dict
 
+    Returns: None
+    """
 
-def checkbox_controller(item):
     editor = item["editor"]
     editor.toggle()
     item["value"] = editor.is_checked()
 
 
-def apply_button_controller(item):
+def apply_button_controller(*args) -> str:
+    """
+    The function handles pressing enter button in the CheckBox widget
+    Args:
+        args: tuple
+
+    Returns: None
+    """
+
     return "apply"
 
 
-def radiogroup_controller(item):
+def radiogroup_controller(item: dict):
+    """
+    The function handles pressing buttons in the Radiogroup widget
+    Args:
+        item: dict
+
+    Returns: None
+    """
+
     editor = item["editor"]
     while True:
         editor.show()
@@ -89,7 +105,17 @@ def radiogroup_controller(item):
 
 def interface_controller(
     interface: NetInterface, stdscr: curses.window, y: int, x: int
-):
+) -> None | str:
+    """
+    The function handles pressing buttons in the InterfaceView.
+    Args:
+        interface: NetInterface
+        stdscr: curses.window
+        y: int indent from top edge
+        x: int indent from left edge
+
+    Returns: str or None
+    """
 
     height, weight = stdscr.getmaxyx()
     interfaces_height = height - y
@@ -144,7 +170,17 @@ def interface_controller(
             interface_view.navigate(1)
 
 
-def menu_controller(stdscr, y, x):
+def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
+    """
+    The function handles pressing buttons in the MenuView.
+    Args:
+        stdscr: curses.window
+        y: int indent from top edge
+        x: int indent from left edge
+
+    Returns: Nonw
+    """
+
     height, width = stdscr.getmaxyx()
 
     menu_height = height - y

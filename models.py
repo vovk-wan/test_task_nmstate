@@ -18,7 +18,7 @@ logging.getLogger("requests").propagate = False
 
 class NetInterface:
     """
-    Класс - оболочка ethernet интерфейса
+    Class - ethernet interface wrapper
     """
 
     net_state = dict()
@@ -37,24 +37,27 @@ class NetInterface:
 
     def state_up(self) -> dict:
         """
-        Method generated config interface state for netstate.
-        Returns: dict
+        The method generates the 'state=up' interface state for the netstate lib.
+
+        Returns: dict - interface state
         """
 
         return {Interface.NAME: self.name, Interface.STATE: InterfaceState.UP}
 
     def state_down(self) -> dict:
         """
-        Method generated config interface state for netstate.
-        Returns: dict
+        Method generates interface state 'state=down' for netstate lib.
+
+        Returns: dict - in this state
         """
 
         return {Interface.NAME: self.name, Interface.STATE: InterfaceState.DOWN}
 
     def dhcp_up(self) -> dict:
         """
-        Method generated config interface state for netstate.
-        Returns: dict
+        Method generates interface state 'dhcp=up' for netstate lib.
+
+        Returns: dict - interface state
         """
 
         return {
@@ -69,11 +72,11 @@ class NetInterface:
 
     def dhcp_down(self, ip) -> dict:
         """
-        Method generated config interface state for netstate.
+        The method generates the interface state with manual IP input for the netstate lib.
         Args:
             ip: str - ip addres
 
-        Returns: dict
+        Returns: dict - interface state
         """
 
         return {
@@ -93,7 +96,7 @@ class NetInterface:
 
     def add_bridge(self, bridge: str) -> dict:
         """
-        Method generated config interface state for netstate.
+        The method generates the interface state with the LinuxBridge controller for netstat lib.
         Args:
             bridge: str - bridge name
 
@@ -109,7 +112,8 @@ class NetInterface:
 
     def _create_bridge(self, bridge: str) -> None:
         """
-        Method adds config bridge for netstate to bridge list.
+        The method adds the LinuxBridge configuration for the netstate library
+        to the list of bridges.
         Args:
             bridge: str - bridge name
 
@@ -133,7 +137,8 @@ class NetInterface:
 
     def _add_bridge(self, bridge: str) -> None:
         """
-        Method changes config bridge for netstate to bridge list.
+        The method modifies or adds a bridge configuration for the netstate lib
+        to the list of bridges.
         Args:
             bridge: str - bridge name
 
@@ -157,7 +162,8 @@ class NetInterface:
 
     def _remove_bridge(self) -> None:
         """
-        Method removes port from config bridge for netstate.
+        The method removes a port from the bridge configuration for the netstate lib.
+
         Returns: None
         """
 
@@ -175,7 +181,8 @@ class NetInterface:
 
     def update_bridges(self, bridge: str) -> None:
         """
-        Method updates config bridge for netstate to bridge list.
+        The method updates the bridge configuration for the netstate library
+        in the bridge list.
         Args:
             bridge: str - bridge name
 
@@ -190,11 +197,11 @@ class NetInterface:
 
     def _get_new_iface_state(self, **kwargs) -> dict:
         """
-        Method generates config interface state for netstate.
+        The method generates a new interface state for the netstate library.
         Args:
             **kwargs:
 
-        Returns: dict
+        Returns: dict - interface state
         """
 
         if "state" in kwargs and kwargs["state"].lower() == "down":
@@ -209,7 +216,7 @@ class NetInterface:
 
     def apply(self, **kwargs) -> str:
         """
-        Method applies config interface state to netstate.
+        The method applies the interface state using the netstate library.
         Args:
             **kwargs:
 
@@ -259,7 +266,8 @@ class NetInterface:
 
     def serialize(self) -> list[dict]:
         """
-        Method generates items for interface view.
+        The method generates items to represent the interface.
+
         Returns: list[dict]
         """
 
@@ -292,7 +300,8 @@ class NetInterface:
     @classmethod
     def update_interfaces(cls, force: bool = False) -> None:
         """
-        Methods updates ethernet interface list, bridge list and net state info.
+        The method updates the list of Ethernet interfaces, the list of bridges,
+        and network state information.
         Args:
             force:
 
@@ -330,10 +339,3 @@ class NetInterface:
                     LinuxBridge.CONFIG_SUBTREE: {LinuxBridge.PORT_SUBTREE: [*ports]},
                 }
             )
-
-
-# TODO
-# TODO 1 docstring
-# TODO 2 annotation
-# TODO 3 review
-# TODO 4 linters (flake8 + blake)

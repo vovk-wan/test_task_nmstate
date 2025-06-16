@@ -7,7 +7,7 @@ from consts import Color
 
 class MyApp:
     """
-    class for init curses application.
+    Entry point class and initialization of initial values for the application.
     """
 
     def __init__(self, stdscr):
