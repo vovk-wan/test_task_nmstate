@@ -20,6 +20,8 @@ def ipv4_validator(value: str) -> bool:
     Returns: bool - True if the address is valid, False otherwise.
     """
 
+    if not isinstance(value, str):
+        return False
     pattern = re.compile(r"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
     return bool(pattern.match(value))
 
@@ -34,6 +36,8 @@ def bridge_name_validator(value: str) -> bool:
     Returns: bool - True if the name is valid, False otherwise.
     """
 
+    if not isinstance(value, str):
+        return False
     return bool(re.match(r"^[a-zA-Z][a-zA-Z0-9_-]{0,14}$", value))
 
 
