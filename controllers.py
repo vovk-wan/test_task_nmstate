@@ -1,4 +1,11 @@
+"""
+controllers.py
+________________
+The module contains controllers for working with the Curses library.
+"""
+
 import curses
+
 from typing import Callable
 
 from views import MenuView, InterfaceView
@@ -7,32 +14,32 @@ from validators import get_validator
 from consts import Color
 
 
-def get_editor_controller(item: dict) -> Callable:
+def get_editor_controller(type: str) -> Callable:
     """
     Function returns a controller for the editor.
-    Args:
-        item: dict
 
-    Returns: Callable
+    Args:
+        type: type of field to select controller
+
+    Returns: the  controller function for the editor
     """
 
-    if item["type"] in ("text", "bridge_name", "ipv4address"):
+    if type in ("text", "bridge_name", "ipv4address"):
         return texteditor_controller
-    elif item["type"] == "bool":
+    elif type == "bool":
         return checkbox_controller
-    elif item["type"] == "state_bool":
+    elif type == "state_bool":
         return radiogroup_controller
-    elif item["type"] == "apply_button":
+    elif type == "apply_button":
         return apply_button_controller
 
 
 def texteditor_controller(item: dict) -> None:
     """
-    The function handles pressing keyboard buttons in the TextEdit widget
-    Args:
-        item: dict
+    The function handles pressing keyboard keys in the TextEdit widget.
 
-    Returns: None
+    Args:
+        item: description of the field and widget for the interface
     """
 
     editor = item["editor"]
@@ -55,13 +62,12 @@ def texteditor_controller(item: dict) -> None:
     curses.curs_set(0)
 
 
-def checkbox_controller(item: dict):
+def checkbox_controller(item: dict) -> None:
     """
-    The function handles pressing enter button in the CheckBox widget
-    Args:
-        item: dict
+    The function handles pressing enter keys in the CheckBox widget.
 
-    Returns: None
+    Args:
+        item: description of the field and widget for the interface
     """
 
     editor = item["editor"]
@@ -71,23 +77,21 @@ def checkbox_controller(item: dict):
 
 def apply_button_controller(*args) -> str:
     """
-    The function handles pressing enter button in the CheckBox widget
-    Args:
-        args: tuple
+    The function handles pressing enter keys in the apply button widget.
 
-    Returns: None
+    Args:
+        args: any positional arguments parameter for compatibility
     """
 
     return "apply"
 
 
-def radiogroup_controller(item: dict):
+def radiogroup_controller(item: dict) -> None:
     """
-    The function handles pressing buttons in the Radiogroup widget
-    Args:
-        item: dict
+    The function handles pressing keys in the Radiogroup widget.
 
-    Returns: None
+    Args:
+        item: description of the field and widget for the interface
     """
 
     editor = item["editor"]
@@ -103,16 +107,15 @@ def radiogroup_controller(item: dict):
             editor.handle_input(key)
 
 
-def interface_controller(
-    interface: NetInterface, stdscr: curses.window, y: int, x: int
-) -> None | str:
+def interface_controller(interface: NetInterface, stdscr: curses.window, y: int, x: int) -> None | str:
     """
-    The function handles pressing buttons in the InterfaceView.
+    The function handles pressing keys in the InterfaceView.
+
     Args:
-        interface: NetInterface
-        stdscr: curses.window
-        y: int indent from top edge
-        x: int indent from left edge
+        interface: ethernet interface
+        stdscr: main application window
+        y: indent from top edge
+        x: indent from left edge
 
     Returns: str or None
     """
@@ -141,8 +144,9 @@ def interface_controller(
         elif key in [curses.KEY_ENTER, ord("\n")]:
             stdscr.hline(1, 2, " ", weight - 2)
             stdscr.refresh()
-            editor = get_editor_controller(interface_view.items[interface_view.position])
-            result = editor(interface_view.items[interface_view.position])
+            item = interface_view.items[interface_view.position]
+            editor = get_editor_controller(item["type"])
+            result = editor(item)
             if result == "apply":
                 errors = []
                 for item in interface_view.items:
@@ -172,13 +176,12 @@ def interface_controller(
 
 def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
     """
-    The function handles pressing buttons in the MenuView.
-    Args:
-        stdscr: curses.window
-        y: int indent from top edge
-        x: int indent from left edge
+    The function handles pressing keys in the MenuView.
 
-    Returns: Nonw
+    Args:
+        stdscr: main application window
+        y: indent from top edge
+        x: indent from left edge
     """
 
     height, width = stdscr.getmaxyx()
@@ -207,7 +210,7 @@ def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
                 menu.items[menu.position], stdscr, y, x + x + menu_width
             )
             if res == "reload":
-                NetInterface.update_interfaces(force=True)
+                NetInterface.update_interfaces()
                 menu_items = [iface for iface in NetInterface.ethernet_interfaces]
 
                 menu = MenuView(menu_win, menu_items)
