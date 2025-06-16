@@ -1,4 +1,11 @@
+"""
+views.py
+__________
+The module contains all the views used in the application.
+"""
+
 import curses
+
 from abc import ABC, abstractmethod
 
 from widgets import TextEdit, Checkbox, RadioGroupState, Button
@@ -15,7 +22,9 @@ MAPPER_WIDGET = {
 
 
 class View(ABC):
-    def __init__(self, parent, items: list):
+    """The base class for all views."""
+
+    def __init__(self, parent: curses.window, items: list):
         self.parent = parent
         height, width = self.parent.getmaxyx()
         begin_y, begin_x = self.parent.getbegyx()
@@ -46,16 +55,18 @@ class View(ABC):
 
     @abstractmethod
     def show(self):
-        raise NotImplementedError
+        pass
 
 
 class MenuView(View):
+    """The menu presentation class is used to select an Ethernet interface and open it for modification."""
 
-    def __init__(self, parent, items):
+    def __init__(self, parent: curses.window, items: list[dict]):
         super().__init__(parent, items)
         self.parent.addstr(0, 0, "Menu")
 
-    def show(self):
+    def show(self) -> None:
+        """Menu drawing method."""
         self.window.clear()
         self.parent.refresh()
         self.window.refresh()
@@ -70,7 +81,9 @@ class MenuView(View):
 
 
 class InterfaceView(View):
-    def __init__(self, parent, items, interface):
+    """The interface presentation class is used to modify the Ethernet interface."""
+
+    def __init__(self, parent: curses.window, items: list, interface):
         super().__init__(parent, items)
         self.interface = interface
         self.parent.addstr(0, 0, "Interface")
@@ -79,6 +92,8 @@ class InterfaceView(View):
         self.full_items = items
 
     def show(self):
+        """Menu drawing method."""
+
         self.window.clear()
         self.parent.refresh()
         self.window.refresh()
@@ -86,6 +101,8 @@ class InterfaceView(View):
         self.add_widgets()
 
     def add_widgets(self):
+        """The method adds widgets to the interfaceview window."""
+
         border_top = 2
         border_left = 2
         self.set_show_items()
@@ -101,6 +118,8 @@ class InterfaceView(View):
             editor.show()
 
     def set_show_items(self):
+        """The method sets the elements available for display."""
+
         res = {item["name"]: item["value"] for item in self.full_items}
         show_items = []
         if res["state"] == "down":

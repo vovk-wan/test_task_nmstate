@@ -125,9 +125,7 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
     interfaces_width = 35
     interfaces_top = y
     interfaces_left = x
-    interfaces_win = stdscr.subwin(
-        interfaces_height, interfaces_width, interfaces_top, interfaces_left
-    )
+    interfaces_win = stdscr.subwin(interfaces_height, interfaces_width, interfaces_top, interfaces_left)
     interface_view = InterfaceView(interfaces_win, interface.serialize(), interface)
     while True:
         interface_view.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
@@ -194,9 +192,8 @@ def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
     menu_win = stdscr.subwin(menu_height, menu_width, menu_top, menu_left)
 
     NetInterface.update_interfaces()
-    menu_items = [iface for iface in NetInterface.ethernet_interfaces]
 
-    menu = MenuView(menu_win, menu_items)
+    menu = MenuView(menu_win, NetInterface.ethernet_interfaces)
     while True:
         menu.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
         menu.parent.refresh()
@@ -211,9 +208,7 @@ def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
             )
             if res == "reload":
                 NetInterface.update_interfaces()
-                menu_items = [iface for iface in NetInterface.ethernet_interfaces]
-
-                menu = MenuView(menu_win, menu_items)
+                menu = MenuView(menu_win, NetInterface.ethernet_interfaces)
         elif key == ord("q"):
             break
         elif key == curses.KEY_UP:
