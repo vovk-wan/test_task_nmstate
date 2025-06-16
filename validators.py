@@ -1,6 +1,6 @@
 """
 validators.py
-________________
+---------------
 The module contains validators for the types that are used in the application and a function for obtaining a validator
 by field type.
 """

@@ -1,6 +1,6 @@
 """
 views.py
-__________
+---------
 The module contains all the views used in the application.
 """
 

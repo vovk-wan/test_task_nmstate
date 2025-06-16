@@ -1,6 +1,6 @@
 """
 controllers.py
-________________
+--------------
 The module contains controllers for working with the Curses library.
 """
 
@@ -72,7 +72,7 @@ def checkbox_controller(item: dict) -> None:
 
     editor = item["editor"]
     editor.toggle()
-    item["value"] = editor.is_checked()
+    item["value"] = editor.value
 
 
 def apply_button_controller(*args) -> str:

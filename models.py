@@ -1,6 +1,6 @@
 """
 models.py
----------
+-----------
 The module contains classes and methods for the application to work with the nmstate library.
 """
 
