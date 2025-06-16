@@ -1,4 +1,5 @@
 import curses
+from typing import Callable
 
 from views import MenuView, InterfaceView
 from models import NetInterface
@@ -6,18 +7,26 @@ from validators import get_validator
 from consts import Color
 
 
-def editor_controller(item):
+def get_editor_controller(item: dict) -> Callable:
+    """
+    Function returns a controller for the editor.
+    Args:
+        item: dict
+
+    Returns: Callable
+    """
+
     if item["type"] in ("text", "bridge_name", "ipv4address"):
-        return texteditor_controller(item)
+        return texteditor_controller
     elif item["type"] == "bool":
-        return checkbox_controller(item)
+        return checkbox_controller
     elif item["type"] == "state_bool":
-        return radiogroup_controller(item)
+        return radiogroup_controller
     elif item["type"] == "apply_button":
-        return apply_button_controller(item)
+        return apply_button_controller
 
 
-def texteditor_controller(item):
+def texteditor_controller(item) -> None:
     editor = item["editor"]
     curses.curs_set(1)
     while True:
@@ -106,7 +115,8 @@ def interface_controller(
         elif key in [curses.KEY_ENTER, ord("\n")]:
             stdscr.hline(1, 2, " ", weight - 2)
             stdscr.refresh()
-            result = editor_controller(interface_view.items[interface_view.position])
+            editor = get_editor_controller(interface_view.items[interface_view.position])
+            result = editor(interface_view.items[interface_view.position])
             if result == "apply":
                 errors = []
                 for item in interface_view.items:

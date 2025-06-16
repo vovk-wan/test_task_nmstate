@@ -61,14 +61,14 @@ class TextEdit(Widget):
         elif key == curses.KEY_DC:
             if self.cursor_pos > 0:
                 self.value = (
-                    self.value[: self.cursor_pos] + self.value[self.cursor_pos + 1 :]
+                    self.value[: self.cursor_pos] + self.value[self.cursor_pos + 1:]
                 )
         elif 32 <= key < 127:
             if len(self.value) < self.width:
                 self.value = (
                     self.value[: self.cursor_pos]
                     + chr(key)
-                    + self.value[self.cursor_pos :]
+                    + self.value[self.cursor_pos:]
                 )
                 self.cursor_pos += 1
 

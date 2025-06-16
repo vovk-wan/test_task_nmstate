@@ -36,12 +36,27 @@ class NetInterface:
         self.ipv6 = kwargs[Interface.IPV6]
 
     def state_up(self) -> dict:
+        """
+        Method generated config interface state for netstate.
+        Returns: dict
+        """
+
         return {Interface.NAME: self.name, Interface.STATE: InterfaceState.UP}
 
     def state_down(self) -> dict:
+        """
+        Method generated config interface state for netstate.
+        Returns: dict
+        """
+
         return {Interface.NAME: self.name, Interface.STATE: InterfaceState.DOWN}
 
     def dhcp_up(self) -> dict:
+        """
+        Method generated config interface state for netstate.
+        Returns: dict
+        """
+
         return {
             Interface.NAME: self.name,
             Interface.TYPE: InterfaceType.ETHERNET,
@@ -53,6 +68,14 @@ class NetInterface:
         }
 
     def dhcp_down(self, ip) -> dict:
+        """
+        Method generated config interface state for netstate.
+        Args:
+            ip: str - ip addres
+
+        Returns: dict
+        """
+
         return {
             Interface.NAME: self.name,
             Interface.STATE: InterfaceState.UP,
@@ -69,6 +92,14 @@ class NetInterface:
         }
 
     def add_bridge(self, bridge: str) -> dict:
+        """
+        Method generated config interface state for netstate.
+        Args:
+            bridge: str - bridge name
+
+        Returns:dict
+        """
+
         return {
             Interface.NAME: self.name,
             Interface.TYPE: InterfaceType.ETHERNET,
@@ -77,6 +108,14 @@ class NetInterface:
         }
 
     def _create_bridge(self, bridge: str) -> None:
+        """
+        Method adds config bridge for netstate to bridge list.
+        Args:
+            bridge: str - bridge name
+
+        Returns: None
+        """
+
         self.bridges.append(
             {
                 Interface.NAME: bridge,
@@ -93,6 +132,14 @@ class NetInterface:
         )
 
     def _add_bridge(self, bridge: str) -> None:
+        """
+        Method changes config bridge for netstate to bridge list.
+        Args:
+            bridge: str - bridge name
+
+        Returns: None
+        """
+
         if not bridge:
             return
         for item in self.bridges:
@@ -109,6 +156,10 @@ class NetInterface:
         self._create_bridge(bridge)
 
     def _remove_bridge(self) -> None:
+        """
+        Method removes port from config bridge for netstate.
+        Returns: None
+        """
 
         for item in self.bridges:
             if item[Interface.NAME] == self.controller:
@@ -123,6 +174,14 @@ class NetInterface:
                 break
 
     def update_bridges(self, bridge: str) -> None:
+        """
+        Method updates config bridge for netstate to bridge list.
+        Args:
+            bridge: str - bridge name
+
+        Returns: None
+        """
+
         if self.controller == bridge:
             return
         self._add_bridge(bridge)
@@ -130,6 +189,14 @@ class NetInterface:
             self._remove_bridge()
 
     def _get_new_iface_state(self, **kwargs) -> dict:
+        """
+        Method generates config interface state for netstate.
+        Args:
+            **kwargs:
+
+        Returns: dict
+        """
+
         if "state" in kwargs and kwargs["state"].lower() == "down":
             return self.state_down()
         elif "ipv4 address" in kwargs:
@@ -140,7 +207,15 @@ class NetInterface:
             return self.add_bridge(kwargs["bridge name"])
         return {}
 
-    def apply(self, **kwargs):
+    def apply(self, **kwargs) -> str:
+        """
+        Method applies config interface state to netstate.
+        Args:
+            **kwargs:
+
+        Returns: str - result apply
+        """
+
         self.update_interfaces()
         origin = {
             item["name"]: item["value"]
@@ -183,6 +258,11 @@ class NetInterface:
         )
 
     def serialize(self) -> list[dict]:
+        """
+        Method generates items for interface view.
+        Returns: list[dict]
+        """
+
         groups = list()
         groups.append(dict(name="state", value=self.state, type="state_bool"))
         dhcp = (
@@ -211,8 +291,15 @@ class NetInterface:
 
     @classmethod
     def update_interfaces(cls, force: bool = False) -> None:
-        if force or not cls.net_state:
-            cls.net_state = libnmstate.show()
+        """
+        Methods updates ethernet interface list, bridge list and net state info.
+        Args:
+            force:
+
+        Returns:
+
+        """
+        cls.net_state = libnmstate.show()
         cls.ethernet_interfaces = [
             NetInterface(**interface)
             for interface in cls.net_state[Interface.KEY]
