@@ -180,29 +180,21 @@ class RadioGroupState(Widget):
 class Button(Widget):
     def __init__(self, parent, border_top, border_left, index, caption, mode):
         super().__init__(parent, border_top, border_left, index, caption, mode)
-
-        # self.y = border_top + index + border_top * index + 1
+        height, width = self.window.getmaxyx()
         self.y = 1
-        self.caption = f"    {caption}    "
-        # self.x = (border_left + 21) // 2 - len(self.caption) // 2
-        self.x = 1
+        self.caption = caption
+        self.x = (width - len(caption)) // 2
         self.value = lambda: None
         self.mode = mode
+        self.window.box()
+        self.window.addstr(self.y, self.x, self.caption)
 
     def show(self):
         """Widget drawing method."""
+
         if self.mode == curses.A_NORMAL:
-            self.window.addstr(
-                self.y,
-                self.x,
-                self.caption,
-                curses.color_pair(Color.INACTIVE_BUTTON_COLOR) | curses.A_BOLD,
-            )
+            self.window.bkgd(" ", curses.color_pair(Color.INACTIVE_BUTTON_COLOR))
         else:
-            self.window.addstr(
-                self.y,
-                self.x,
-                self.caption,
-                curses.color_pair(Color.ACTIVE_BUTTON_COLOR) | curses.A_BOLD,
-            )
+            self.window.bkgd(" ", curses.color_pair(Color.ACTIVE_BUTTON_COLOR))
+        self.window.refresh()
 
