@@ -1,4 +1,11 @@
+"""
+controllers.py
+--------------
+The module contains controllers for working with the Curses library.
+"""
+
 import curses
+
 from typing import Callable
 
 from views import MenuView, InterfaceView
@@ -7,26 +14,34 @@ from validators import get_validator
 from consts import Color
 
 
-def get_editor_controller(item: dict) -> Callable:
+def get_editor_controller(type: str) -> Callable:
     """
     Function returns a controller for the editor.
-    Args:
-        item: dict
 
-    Returns: Callable
+    Args:
+        type: type of field to select controller
+
+    Returns: the  controller function for the editor
     """
 
-    if item["type"] in ("text", "bridge_name", "ipv4address"):
+    if type in ("text", "bridge_name", "ipv4address"):
         return texteditor_controller
-    elif item["type"] == "bool":
+    elif type == "bool":
         return checkbox_controller
-    elif item["type"] == "state_bool":
+    elif type == "state_bool":
         return radiogroup_controller
-    elif item["type"] == "apply_button":
+    elif type == "apply_button":
         return apply_button_controller
 
 
-def texteditor_controller(item) -> None:
+def texteditor_controller(item: dict) -> None:
+    """
+    The function handles pressing keyboard keys in the TextEdit widget.
+
+    Args:
+        item: description of the field and widget for the interface
+    """
+
     editor = item["editor"]
     curses.curs_set(1)
     while True:
@@ -47,33 +62,38 @@ def texteditor_controller(item) -> None:
     curses.curs_set(0)
 
 
-def ipv4editor_controller(item):
-    editor = item["editor"]
-    curses.curs_set(1)
-    while True:
-        editor.show()
-        key = editor.window.getch()
-        if key == 27:
-            break
-        if key in [curses.KEY_ENTER, ord("\n")]:
-            item["value"] = list(editor.value)
-            break
-        else:
-            editor.handle_input(key)
-    curses.curs_set(0)
+def checkbox_controller(item: dict) -> None:
+    """
+    The function handles pressing enter keys in the CheckBox widget.
 
+    Args:
+        item: description of the field and widget for the interface
+    """
 
-def checkbox_controller(item):
     editor = item["editor"]
     editor.toggle()
-    item["value"] = editor.is_checked()
+    item["value"] = editor.value
 
 
-def apply_button_controller(item):
+def apply_button_controller(*args) -> str:
+    """
+    The function handles pressing enter keys in the apply button widget.
+
+    Args:
+        args: any positional arguments parameter for compatibility
+    """
+
     return "apply"
 
 
-def radiogroup_controller(item):
+def radiogroup_controller(item: dict) -> None:
+    """
+    The function handles pressing keys in the Radiogroup widget.
+
+    Args:
+        item: description of the field and widget for the interface
+    """
+
     editor = item["editor"]
     while True:
         editor.show()
@@ -87,18 +107,25 @@ def radiogroup_controller(item):
             editor.handle_input(key)
 
 
-def interface_controller(
-    interface: NetInterface, stdscr: curses.window, y: int, x: int
-):
+def interface_controller(interface: NetInterface, stdscr: curses.window, y: int, x: int) -> None | str:
+    """
+    The function handles pressing keys in the InterfaceView.
+
+    Args:
+        interface: ethernet interface
+        stdscr: main application window
+        y: indent from top edge
+        x: indent from left edge
+
+    Returns: str or None
+    """
 
     height, weight = stdscr.getmaxyx()
     interfaces_height = height - y
     interfaces_width = 35
     interfaces_top = y
     interfaces_left = x
-    interfaces_win = stdscr.subwin(
-        interfaces_height, interfaces_width, interfaces_top, interfaces_left
-    )
+    interfaces_win = stdscr.subwin(interfaces_height, interfaces_width, interfaces_top, interfaces_left)
     interface_view = InterfaceView(interfaces_win, interface.serialize(), interface)
     while True:
         interface_view.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
@@ -115,8 +142,9 @@ def interface_controller(
         elif key in [curses.KEY_ENTER, ord("\n")]:
             stdscr.hline(1, 2, " ", weight - 2)
             stdscr.refresh()
-            editor = get_editor_controller(interface_view.items[interface_view.position])
-            result = editor(interface_view.items[interface_view.position])
+            item = interface_view.items[interface_view.position]
+            editor = get_editor_controller(item["type"])
+            result = editor(item)
             if result == "apply":
                 errors = []
                 for item in interface_view.items:
@@ -144,7 +172,16 @@ def interface_controller(
             interface_view.navigate(1)
 
 
-def menu_controller(stdscr, y, x):
+def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
+    """
+    The function handles pressing keys in the MenuView.
+
+    Args:
+        stdscr: main application window
+        y: indent from top edge
+        x: indent from left edge
+    """
+
     height, width = stdscr.getmaxyx()
 
     menu_height = height - y
@@ -155,9 +192,8 @@ def menu_controller(stdscr, y, x):
     menu_win = stdscr.subwin(menu_height, menu_width, menu_top, menu_left)
 
     NetInterface.update_interfaces()
-    menu_items = [iface for iface in NetInterface.ethernet_interfaces]
 
-    menu = MenuView(menu_win, menu_items)
+    menu = MenuView(menu_win, NetInterface.ethernet_interfaces)
     while True:
         menu.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
         menu.parent.refresh()
@@ -171,10 +207,8 @@ def menu_controller(stdscr, y, x):
                 menu.items[menu.position], stdscr, y, x + x + menu_width
             )
             if res == "reload":
-                NetInterface.update_interfaces(force=True)
-                menu_items = [iface for iface in NetInterface.ethernet_interfaces]
-
-                menu = MenuView(menu_win, menu_items)
+                NetInterface.update_interfaces()
+                menu = MenuView(menu_win, NetInterface.ethernet_interfaces)
         elif key == ord("q"):
             break
         elif key == curses.KEY_UP:
