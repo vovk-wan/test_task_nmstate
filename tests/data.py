@@ -152,6 +152,12 @@ NET_STATE = {
             'stp-hairpin-mode': False,
             'stp-path-cost': 100,
             'stp-priority': 32
+          },
+          {
+            'name': 'enp0s9',
+            'stp-hairpin-mode': False,
+            'stp-path-cost': 100,
+            'stp-priority': 32
           }
         ]
       }

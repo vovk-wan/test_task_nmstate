@@ -16,12 +16,13 @@
 sudo python3 app.py
 ```
 
-readme
+### зависимости
+- System requirements nmstate python3 pip python3-libnmstate ethtool install python3-pytest
+- Python requirements libnmstate pytest
+
+
+ps. приложение и тесты сделано в упрощенном виде и так как понял задание исполнитель
+
 v 0.1 
-
-в данное время 
-- добавляются тесты
-- изменяется вид кнопки apply
-
 вероятно будет добавлена возможность применить изменения нескольких интерфейсов
 одновременно
