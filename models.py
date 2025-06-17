@@ -321,10 +321,12 @@ class NetInterface:
     @staticmethod
     def get_interfaces(net_state: dict) -> list:
         """The method returns interfaces from net state."""
+
         return net_state[Interface.KEY]
 
     @staticmethod
     def get_bridge_ports(bridge: dict) -> list[dict]:
         """The method returns bridge ports from bridge interface."""
+
         ports = bridge.get(LinuxBridge.CONFIG_SUBTREE, {}).get(LinuxBridge.PORT_SUBTREE, [])
         return [{LinuxBridge.Port.NAME: port.get(LinuxBridge.Port.NAME)} for port in ports]

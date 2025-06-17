@@ -109,7 +109,21 @@ class TestNetInterface:
 
         with patch('libnmstate.show') as mock_show:
             mock_show.return_value = NET_STATE
-
             iface.update_interfaces()
+
         assert len(iface.bridges) == 1
         assert len(iface.ethernet_interfaces) == 4
+
+    def test_get_interfaces(self):
+        """Method get_interfaces test"""
+
+        interfaces = NetInterface.get_interfaces(NET_STATE)
+        assert len(interfaces) == 6
+
+    def test_get_bridge_ports(self, iface):
+        """Method get_bridge_ports test"""
+        interfaces = NET_STATE["interfaces"]
+        bridges = [i for i in interfaces if i["type"] == "linux-bridge"]
+        bridge = bridges[0]
+        ports = iface.get_bridge_ports(bridge)
+        assert len(ports) == len(bridge["bridge"]["port"])
