@@ -34,15 +34,12 @@ class NetInterface:
     ethernet_interfaces = list()
     bridges = list()
 
-    def __init__(self, **kwargs):
-        self.name = kwargs[Interface.NAME]
-        self.type = kwargs[Interface.TYPE]
-        self.state = kwargs[Interface.STATE]
-        self.mac_address = kwargs[Interface.MAC]
-        self.mtu = kwargs[Interface.MTU]
+    def __init__(self, *, name: str, type: str, state: str, ipv4: dict, **kwargs):
+        self.name = name
+        self.type = type
+        self.state = state
         self.controller = kwargs.get(Interface.CONTROLLER, "")
-        self.ipv4 = kwargs[Interface.IPV4]
-        self.ipv6 = kwargs[Interface.IPV6]
+        self.ipv4 = ipv4
 
     def state_up(self) -> dict:
         """
