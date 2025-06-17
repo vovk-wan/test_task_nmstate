@@ -1,7 +1,10 @@
+from unittest.mock import patch
+
+import libnmstate
 import pytest
 
 from models import NetInterface
-
+from .data import NET_STATE
 
 net_states = {
     "ok_state": {
@@ -88,6 +91,7 @@ class TestNetInterface:
 
     def test_serialize(self, iface):
         """Method serialize test"""
+
         expected = [
             {'name': 'state', 'value': 'up', 'type': 'state_bool'},
             {'name': 'ipv4 dhcp', 'value': True, 'type': 'bool'},
@@ -99,3 +103,13 @@ class TestNetInterface:
         res = iface.serialize()
         print(res)
         assert res == expected
+
+    def test_update_interfaces(self, iface):
+        """Method update_interfaces test"""
+
+        with patch('libnmstate.show') as mock_show:
+            mock_show.return_value = NET_STATE
+
+            iface.update_interfaces()
+        assert len(iface.bridges) == 1
+        assert len(iface.ethernet_interfaces) == 4
