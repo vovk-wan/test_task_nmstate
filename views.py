@@ -91,21 +91,32 @@ class InterfaceView(View):
         self.parent.addstr(1, 1, f"name: {interface.name}, type: {interface.type}")
         self.full_items = items
 
-    def show(self):
-        """Menu drawing method."""
+    def show(self, item: dict | None = None) -> None:
+        """
+        Menu drawing method.
+
+        Args:
+            item: editing item
+        """
 
         self.window.clear()
         self.parent.refresh()
         self.window.refresh()
         curses.doupdate()
-        self.add_widgets()
+        self._add_widgets(item)
 
-    def add_widgets(self):
-        """The method adds widgets to the interfaceview window."""
+    def _add_widgets(self, item: dict | None) -> None:
+        """
+        The method adds widgets to the interfaceview window.
+
+        Args:
+            item: editing item
+        """
 
         border_top = 2
         border_left = 2
         self.set_show_items()
+        self.change_position(item)
         for i, item in enumerate(self.items):
             if i == self.position:
                 mode = curses.A_REVERSE
@@ -132,3 +143,17 @@ class InterfaceView(View):
             show_items = ["state", "ipv4 dhcp", "ipv4 address", "bridge", "apply"]
 
         self.items = [item for item in self.full_items if item["name"] in show_items]
+
+    def change_position(self, item: dict | None) -> None:
+        """
+        The method changes the position of the Ethernet interface.
+
+        Args:
+            item: editing item
+        """
+
+        if item:
+            try:
+                self.position = self.items.index(item)
+            except IndexError:
+                self.position = 0
