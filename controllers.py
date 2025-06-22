@@ -111,6 +111,13 @@ def radiogroup_controller(item: dict) -> None:
 
 
 def show_empty_interface_window(interface_win: curses.window) -> None:
+    """
+    The function shows the empty interface window.
+
+    Args:
+        interface_win:  window to show the empty interface
+    """
+
     interface_win.clear()
     interface_win.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
     interface_win.box()
