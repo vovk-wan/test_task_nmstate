@@ -96,12 +96,14 @@ def radiogroup_controller(item: dict) -> None:
 
     editor = item["editor"]
     while True:
+        editor.color = curses.A_REVERSE
         editor.show()
         key = editor.window.getch()
         if key == 27:
             break
         if key in [curses.KEY_ENTER, ord("\n")]:
             item["value"] = editor.value
+            editor.color = curses.A_NORMAL
             break
         else:
             editor.handle_input(key)
@@ -127,9 +129,11 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
     interfaces_left = x
     interfaces_win = stdscr.subwin(interfaces_height, interfaces_width, interfaces_top, interfaces_left)
     interface_view = InterfaceView(interfaces_win, interface.serialize(), interface)
+    item = None
     while True:
         interface_view.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
-        interface_view.show()
+        interface_view.show(item)
+        item = None
 
         key = interface_view.window.getch()
 
@@ -147,13 +151,13 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
             result = editor(item)
             if result == "apply":
                 errors = []
-                for item in interface_view.items:
+                for validate_item in interface_view.items:
                     editor = item["editor"]
-                    if not get_validator(item["type"])(editor.value):
-                        errors.append(item["name"])
+                    if not get_validator(validate_item["type"])(editor.value):
+                        errors.append(validate_item["name"])
                 if errors:
                     stdscr.addstr(
-                        1, 2, f"errors field - {', '.join(errors)}", curses.A_BLINK
+                        1, 2, f"errors field - {', '.join(errors)}", curses.color_pair(Color.ERROR_VALIDATION_COLOR)
                     )
                     stdscr.refresh()
                 else:

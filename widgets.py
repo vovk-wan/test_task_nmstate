@@ -94,7 +94,7 @@ class TextEdit(Widget):
         elif key == curses.KEY_BACKSPACE:
             if self.cursor_pos > 0:
                 self.value = (
-                    self.value[: self.cursor_pos - 1] + self.value[self.cursor_pos :]
+                    self.value[: self.cursor_pos - 1] + self.value[self.cursor_pos:]
                 )
                 self.cursor_pos -= 1
         elif key == curses.KEY_DC:
@@ -153,7 +153,7 @@ class RadioGroupState(Widget):
             if idx == self.selected_index:
                 prefix = " (*)"
                 line = f"{prefix} {option}"
-                mode = curses.A_REVERSE
+                mode = self.color
             else:
                 prefix = " ( )"
                 line = f"{prefix} {option}"
@@ -197,4 +197,3 @@ class Button(Widget):
         else:
             self.window.bkgd(" ", curses.color_pair(Color.ACTIVE_BUTTON_COLOR))
         self.window.refresh()
-
