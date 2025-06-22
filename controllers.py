@@ -152,7 +152,7 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
             if result == "apply":
                 errors = []
                 for validate_item in interface_view.items:
-                    editor = item["editor"]
+                    editor = validate_item["editor"]
                     if not get_validator(validate_item["type"])(editor.value):
                         errors.append(validate_item["name"])
                 if errors:
