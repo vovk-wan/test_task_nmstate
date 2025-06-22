@@ -43,6 +43,7 @@ def texteditor_controller(item: dict) -> None:
     """
 
     editor = item["editor"]
+    editor.color = curses.color_pair(Color.EDITOR_COLOR)
     curses.curs_set(1)
     while True:
         editor.show()
@@ -152,7 +153,7 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
             if result == "apply":
                 errors = []
                 for validate_item in interface_view.items:
-                    editor = item["editor"]
+                    editor = validate_item["editor"]
                     if not get_validator(validate_item["type"])(editor.value):
                         errors.append(validate_item["name"])
                 if errors:
