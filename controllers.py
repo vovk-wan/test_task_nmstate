@@ -203,12 +203,13 @@ def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
     menu = MenuView(menu_win, NetInterface.ethernet_interfaces)
     while True:
         menu.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
-        menu.parent.refresh()
+        menu.window.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
         menu.show()
         key = menu.window.getch()
 
         if key in [curses.KEY_ENTER, ord("\n")]:
             menu.parent.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
+            menu.window.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
             menu.parent.refresh()
             res = interface_controller(
                 menu.items[menu.position], stdscr, y, x + x + menu_width
