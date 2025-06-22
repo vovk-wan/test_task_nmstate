@@ -20,6 +20,17 @@ sudo python3 app.py
 - System requirements nmstate python3 pip python3-libnmstate ethtool install python3-pytest
 - Python requirements libnmstate pytest
 
+### установка зависимостей
+```bash
+sudo dnf update
+sudo dnf install nmstate python3 pip python3-libnmstate ethtool install python3-pytes
+pip install libnmstate flake8 black pytest
+```
+
+### запуск приложения
+```bash
+sudo python3 app.py
+```
 
 ps. приложение и тесты сделано в упрощенном виде и так как понял задание исполнитель
 
