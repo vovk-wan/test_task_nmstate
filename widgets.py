@@ -56,8 +56,7 @@ class Widget(ABC):
 class TextEdit(Widget):
     """The class represents a text edit widget."""
 
-    def __init__(
-            self, parent, border_top, border_left, index, caption, mode):
+    def __init__(self, parent, border_top, border_left, index, caption, mode):
         super().__init__(parent, border_top, border_left, index, caption, mode)
         height, width = self.window.getmaxyx()
         self.width = width - 2 - 1

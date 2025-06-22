@@ -67,6 +67,7 @@ class MenuView(View):
 
     def show(self) -> None:
         """Menu drawing method."""
+
         self.window.clear()
         self.parent.refresh()
         self.window.refresh()

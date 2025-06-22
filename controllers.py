@@ -43,6 +43,7 @@ def texteditor_controller(item: dict) -> None:
     """
 
     editor = item["editor"]
+    editor.color = curses.color_pair(Color.EDITOR_COLOR)
     curses.curs_set(1)
     while True:
         editor.show()
