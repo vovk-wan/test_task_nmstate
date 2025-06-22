@@ -170,6 +170,8 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
             interface_view.navigate(-1)
         elif key == curses.KEY_DOWN:
             interface_view.navigate(1)
+        elif key == ord("q"):
+            return "exit"
 
 
 def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
@@ -209,9 +211,11 @@ def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
             if res == "reload":
                 NetInterface.update_interfaces()
                 menu = MenuView(menu_win, NetInterface.ethernet_interfaces)
-        elif key == ord("q"):
-            break
+            elif res == "exit":
+                break
         elif key == curses.KEY_UP:
             menu.navigate(-1)
         elif key == curses.KEY_DOWN:
             menu.navigate(1)
+        elif key == ord("q"):
+            break
