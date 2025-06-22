@@ -110,7 +110,22 @@ def radiogroup_controller(item: dict) -> None:
             editor.handle_input(key)
 
 
-def interface_controller(interface: NetInterface, stdscr: curses.window, y: int, x: int) -> None | str:
+def show_empty_interface_window(interface_win: curses.window) -> None:
+    """
+    The function shows the empty interface window.
+
+    Args:
+        interface_win:  window to show the empty interface
+    """
+
+    interface_win.clear()
+    interface_win.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
+    interface_win.box()
+    interface_win.addstr(0, 0, "Interface")
+    interface_win.refresh()
+
+
+def interface_controller(interface: NetInterface | None, stdscr: curses.window, y: int, x: int) -> None | str:
     """
     The function handles pressing keys in the InterfaceView.
 
@@ -129,6 +144,9 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
     interfaces_top = y
     interfaces_left = x
     interfaces_win = stdscr.subwin(interfaces_height, interfaces_width, interfaces_top, interfaces_left)
+    if not interface:
+        show_empty_interface_window(interfaces_win)
+        return
     interface_view = InterfaceView(interfaces_win, interface.serialize(), interface)
     item = None
     while True:
@@ -140,9 +158,12 @@ def interface_controller(interface: NetInterface, stdscr: curses.window, y: int,
 
         if key == 27:
             interface_view.parent.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
+            interface_view.parent.hline(1, 1, " ", interfaces_width - 2)
             interface_view.parent.refresh()
             stdscr.hline(1, 2, " ", weight - 2)
             stdscr.refresh()
+            interface_view.window.clear()
+            interface_view.window.refresh()
             break
         elif key in [curses.KEY_ENTER, ord("\n")]:
             stdscr.hline(1, 2, " ", weight - 2)
@@ -199,16 +220,17 @@ def menu_controller(stdscr: curses.window, y: int, x: int) -> None:
     menu_win = stdscr.subwin(menu_height, menu_width, menu_top, menu_left)
 
     NetInterface.update_interfaces()
-
     menu = MenuView(menu_win, NetInterface.ethernet_interfaces)
+    interface_controller(None, stdscr, y, x + x + menu_width)
     while True:
         menu.parent.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
-        menu.parent.refresh()
+        menu.window.bkgd(" ", curses.color_pair(Color.ACTIVE_COLOR))
         menu.show()
         key = menu.window.getch()
 
         if key in [curses.KEY_ENTER, ord("\n")]:
             menu.parent.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
+            menu.window.bkgd(" ", curses.color_pair(Color.INACTIVE_COLOR))
             menu.parent.refresh()
             res = interface_controller(
                 menu.items[menu.position], stdscr, y, x + x + menu_width
